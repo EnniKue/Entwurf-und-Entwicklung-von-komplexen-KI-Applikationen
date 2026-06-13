@@ -1,0 +1,26 @@
+import ChatMessage from "./ChatMessage";
+
+type Message = {
+  text: string;
+  sender: "user" | "assistant";
+};
+
+type Props = {
+  messages: Message[];
+};
+
+export default function ChatWindow({
+  messages,
+}: Props) {
+  return (
+    <div>
+      {messages.map((message, index) => (
+        <ChatMessage
+          key={index}
+          text={message.text}
+          sender={message.sender}
+        />
+      ))}
+    </div>
+  );
+}

@@ -3,3 +3,5 @@ flask_cors
 python-dotenv
 openai
 ollama
+fastapi
+uvicorn
