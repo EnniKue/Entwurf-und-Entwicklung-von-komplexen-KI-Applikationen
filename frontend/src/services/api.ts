@@ -9,5 +9,12 @@ export const sendMessage = async (message: string) => {
     }),
   });
 
-  return await response.json();
+  console.log("Status:", response.status);
+
+  const text = await response.text();
+
+  console.log("RAW RESPONSE:");
+  console.log(text);
+
+  return JSON.parse(text);
 };

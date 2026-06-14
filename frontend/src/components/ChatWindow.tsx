@@ -13,7 +13,11 @@ export default function ChatWindow({
   messages,
 }: Props) {
   return (
-    <div>
+    <div
+      style={{
+        padding: "10px",
+      }}
+    >
       {messages.map((message, index) => (
         <ChatMessage
           key={index}
