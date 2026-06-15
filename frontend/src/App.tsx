@@ -42,6 +42,7 @@ function App() {
       "LLM Anfrage gestartet",
     ]);
 
+  try {
     const data = await sendMessage(message);
     setProgress(75);
 
@@ -59,6 +60,22 @@ function App() {
 
     setMessages((prev) => [...prev, assistantMessage]);
     setProgress(100);
+
+    setTimeout(() => {
+      setProgress(0);
+    }, 2000);
+
+   } catch (error) {
+     setLoading(false);
+
+      setTraces((prev) => [
+       ...prev,
+       "Fehler aufgetreten",
+     ]);
+
+      setProgress(0);
+} 
+
   };
 
   return (
