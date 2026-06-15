@@ -21,6 +21,9 @@ function App() {
   const handleSend = async (message: string) => {
     if (!message.trim()) return;
 
+    setTraces([]);
+    setProgress(0);
+
     const userMessage: Message = {
       text: message,
       sender: "user",
@@ -59,11 +62,17 @@ function App() {
     };
 
     setMessages((prev) => [...prev, assistantMessage]);
+   
+    setTraces((prev) => [
+      ...prev,
+      "Antwort angezeigt",
+    ]);
+
     setProgress(100);
 
     setTimeout(() => {
       setProgress(0);
-    }, 2000);
+    }, 3000);
 
    } catch (error) {
      setLoading(false);
@@ -72,6 +81,15 @@ function App() {
        ...prev,
        "Fehler aufgetreten",
      ]);
+
+     setMessages((prev) => [
+        ...prev,
+        {
+         text: "Es ist ein Fehler bei der Anfrage aufgetreten.",
+          sender: "assistant",
+        },
+    ]);
+
 
       setProgress(0);
 } 

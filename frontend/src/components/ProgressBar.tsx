@@ -30,14 +30,16 @@ export default function ProgressBar({
         />
       </div>
 
-      <p
-        style={{
-          marginTop: "5px",
-          fontSize: "14px",
-        }}
-      >
-        {progress} %
-      </p>
+      {progress > 0 && (
+        <div
+          style={{
+            marginTop: "8px",
+            fontSize: "14px",
+          }}
+        >
+          {progress} %
+        </div>
+      )}
     </div>
   );
 }
