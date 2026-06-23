@@ -7,3 +7,5 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
+    source: str
+    route: str

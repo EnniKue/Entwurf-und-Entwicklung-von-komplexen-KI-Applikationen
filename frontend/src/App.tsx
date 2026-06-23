@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 
 import ChatInput from "./components/ChatInput";
 import ChatWindow from "./components/ChatWindow";
-import { sendMessage } from "./services/api";
+
+import {
+  sendMessage,
+  connectToTraceStream,
+} from "./services/api";
+
 import TracePanel from "./components/TracePanel";
 import LoadingIndicator from "./components/LoadingIndicator";
 import ProgressBar from "./components/ProgressBar";
@@ -11,6 +16,7 @@ import ContextMenu from "./components/ContextMenu";
 type Message = {
   text: string;
   sender: "user" | "assistant";
+  route?: string;
 };
 
 function App() {
@@ -20,6 +26,23 @@ function App() {
   const [progress, setProgress] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
   const [showToast, setShowToast] = useState(false);
+
+  /*
+  useEffect(() => {
+  const eventSource =
+    connectToTraceStream((event) => {
+
+      setTraces((prev) => [
+        ...prev,
+        event,
+      ]);
+    });
+
+  return () => {
+    eventSource.close();
+  };
+}, []);
+*/
 
   const [menuPosition, setMenuPosition] = useState({
     x: 0,
@@ -55,36 +78,53 @@ function App() {
 
   try {
     const data = await sendMessage(message);
+
+    const routeNames: Record<string, string> = {
+      knowledge_base: "Wissensbasis",
+      llm: "KI-Modell",
+    };
+
+    const routeName =
+      routeNames[data.route] ?? data.route;
+
     setProgress(75);
 
     setLoading(false);  
 
-    setTraces((prev) => [
-      ...prev,
-      "Antwort erhalten",
-    ]);
+    if (data.route === "sensitive") {
+      setTraces([
+        "Nachricht empfangen",
+        "Sensible Anfrage erkannt",
+        `Antwort aus ${data.source}`,
+        "Antwort angezeigt",
+      ]);
+    } else {
+      setTraces([
+        "Nachricht empfangen",
+        `Anfrage gestartet (${routeName})`,
+        `Antwort erhalten (${data.source})`,
+        "Antwort angezeigt",
+      ]);
+    }
 
     const assistantMessage: Message = {
       text: data.response,
       sender: "assistant",
+      route: data.route,
     };
 
     setMessages((prev) => [...prev, assistantMessage]);
    
-    setTraces((prev) => [
-      ...prev,
-      "Antwort angezeigt",
-    ]);
-
-    setProgress(100);
+        setProgress(100);
 
    } catch (error) {
      setLoading(false);
 
-      setTraces((prev) => [
-       ...prev,
-       "Antwort konnte nicht geladen werden",
-     ]);
+      setTraces([
+        "Nachricht empfangen",
+        "Anfrage gestartet",
+        "Antwort konnte nicht geladen werden",
+      ]);
 
      setMessages((prev) => [
         ...prev,
@@ -210,9 +250,11 @@ function App() {
         backgroundColor: "#dcfce7",
         color: "#000000",
 
-        padding: "10px 18px",
+        padding: "8px 14px",
 
         borderRadius: "10px",
+
+        fontSize: "14px",
 
         border: "1px solid #86efac",
 

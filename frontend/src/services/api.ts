@@ -18,3 +18,19 @@ export const sendMessage = async (message: string) => {
 
   return JSON.parse(text);
 };
+
+export const connectToTraceStream = (
+  onEvent: (event: string) => void
+) => {
+  const eventSource = new EventSource(
+    "http://127.0.0.1:8000/api/chat/stream"
+  );
+
+  eventSource.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    onEvent(data.event);
+  };
+
+  return eventSource;
+};

@@ -1,5 +1,9 @@
 from fastapi import APIRouter
 
+from fastapi.responses import StreamingResponse
+import json
+import asyncio
+
 from app.models.chat import (
     ChatRequest,
     ChatResponse
@@ -18,8 +22,34 @@ router = APIRouter()
 )
 def chat(request: ChatRequest):
 
-    answer = ask_llm(request.message)
+    result = ask_llm(request.message)
 
     return ChatResponse(
-        response=answer
+        response=result["response"],
+        source=result["source"],
+        route=result["route"]
+    )
+
+@router.get("/chat/stream")
+async def chat_stream():
+
+    async def event_generator():
+
+        yield f"data: {json.dumps({'event': 'Nachricht empfangen'})}\n\n"
+
+        await asyncio.sleep(1)
+
+        yield f"data: {json.dumps({'event': 'Anfrage gestartet'})}\n\n"
+
+        await asyncio.sleep(1)
+
+        yield f"data: {json.dumps({'event': 'Antwort erhalten'})}\n\n"
+
+        await asyncio.sleep(1)
+
+        yield f"data: {json.dumps({'event': 'Antwort angezeigt'})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream"
     )

@@ -1,0 +1,74 @@
+[
+  {
+    "keywords": ["urlaub", "urlaubstage"],
+    "answer": "Vollzeitbeschäftigte haben 30 Urlaubstage pro Jahr.",
+    "source": "Unternehmensrichtlinie",
+    "category": "urlaub"
+  },
+  {
+    "keywords": ["krankmeldung", "krank"],
+    "answer": "Eine Krankmeldung muss unverzüglich eingereicht werden.",
+    "source": "Unternehmensrichtlinie",
+    "category": "krankheit"
+  },
+  {
+    "keywords": ["arbeitszeit"],
+    "answer": "Die regelmäßige Arbeitszeit beträgt 40 Stunden pro Woche.",
+    "source": "Unternehmensrichtlinie",
+    "category": "arbeitszeit"
+  },
+  {
+    "keywords": ["homeoffice"],
+    "answer": "Homeoffice kann nach Absprache mit der Führungskraft genutzt werden.",
+    "source": "Unternehmensrichtlinie",
+    "category": "arbeitsmodell"
+  },
+  {
+    "keywords": ["fortbildung", "weiterbildung"],
+    "answer": "Fortbildungen können über die Personalabteilung beantragt werden.",
+    "source": "Unternehmensrichtlinie",
+    "category": "entwicklung"
+  },
+  {
+    "keywords": ["elternzeit"],
+    "answer": "Informationen zur Elternzeit erhalten Sie über die Personalabteilung.",
+    "source": "Unternehmensrichtlinie",
+    "category": "personal"
+  },
+  {
+    "keywords": ["spesen", "reisekosten"],
+    "answer": "Reisekosten können über das Spesenformular eingereicht werden.",
+    "source": "Unternehmensrichtlinie",
+    "category": "abrechnung"
+  },
+  {
+    "keywords": ["passwort", "zugang"],
+    "answer": "Passwortänderungen können über das IT-Service-Portal vorgenommen werden.",
+    "source": "IT-Richtlinie",
+    "category": "it"
+  },
+  {
+  "keywords": ["gehalt", "bonus", "vergütung"],
+  "answer": "Gehalts- und Vergütungsfragen werden ausschließlich durch die Personalabteilung beantwortet.",
+  "source": "HR",
+  "category": "sensibel"
+},
+{
+  "keywords": ["kündigung", "abmahnung"],
+  "answer": "Bitte wenden Sie sich für arbeitsrechtliche Fragen direkt an die Personalabteilung.",
+  "source": "HR",
+  "category": "sensibel"
+},
+{
+  "keywords": ["religion", "glaube", "konfession"],
+  "answer": "Fragen zu religiösen oder weltanschaulichen Themen werden nicht verarbeitet. Bitte wenden Sie sich an die zuständige Ansprechperson.",
+  "source": "Compliance",
+  "category": "sensibel"
+},
+{
+  "keywords": ["diagnose", "krankheit", "gesundheitsdaten"],
+  "answer": "Gesundheitsbezogene Informationen und Diagnosen werden aus Datenschutzgründen nicht verarbeitet.",
+  "source": "Datenschutz",
+  "category": "sensibel"
+}
+]

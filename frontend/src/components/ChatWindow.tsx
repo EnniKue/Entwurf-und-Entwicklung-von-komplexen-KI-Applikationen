@@ -3,6 +3,7 @@ import ChatMessage from "./ChatMessage";
 type Message = {
   text: string;
   sender: "user" | "assistant";
+  route?: string;
 };
 
 type Props = {
@@ -23,6 +24,7 @@ export default function ChatWindow({
           key={index}
           text={message.text}
           sender={message.sender}
+          route={message.route}
         />
       ))}
     </div>

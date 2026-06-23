@@ -1,13 +1,18 @@
 type Props = {
   text: string;
   sender: "user" | "assistant";
+  route?: string;
 };
 
 export default function ChatMessage({
   text,
   sender,
+  route,
 }: Props) {
   const isUser = sender === "user";
+
+  const isSensitive =
+    route === "sensitive";
 
   return (
     <div
@@ -39,6 +44,9 @@ export default function ChatMessage({
         <div
           style={{
             marginTop: "5px",
+            color: isSensitive
+              ? "#dc2626"
+              : undefined,
           }}
         >
           {text}
