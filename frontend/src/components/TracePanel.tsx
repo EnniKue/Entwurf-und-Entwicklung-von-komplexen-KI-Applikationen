@@ -30,12 +30,20 @@ export default function TracePanel({
             trace.includes("Sensible Anfrage") ||
             trace.includes("Antwort aus");
 
+        const isGuardrail =
+            trace.includes("Guardrail");
+
         let icon = "✓";
         let color = "#16a34a";
 
         if (isSensitive) {
             icon = "⚠";
             color = "#d97706";
+        }
+
+        if (isGuardrail) {
+            icon = "❌";
+            color = "#dc2626";
         }
 
         if (isError) {

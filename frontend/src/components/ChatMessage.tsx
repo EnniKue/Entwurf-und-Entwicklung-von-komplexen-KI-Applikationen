@@ -44,9 +44,13 @@ export default function ChatMessage({
         <div
           style={{
             marginTop: "5px",
-            color: isSensitive
-              ? "#dc2626"
-              : undefined,
+
+            color:
+              route === "sensitive"
+                ? "#dc2626"
+                : route === "guardrail"
+                ? "#dc2626"
+                : "inherit",
           }}
         >
           {text}

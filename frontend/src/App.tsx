@@ -105,20 +105,32 @@ function App() {
     setLoading(false);  
 
     if (data.route === "sensitive") {
-      setTraces([
-        "Nachricht empfangen",
-        "Sensible Anfrage erkannt",
-        `Antwort aus ${data.source}`,
-        "Antwort angezeigt",
-      ]);
-    } else {
-      setTraces([
-        "Nachricht empfangen",
-        `Anfrage gestartet (${routeName})`,
-        `Antwort erhalten (${data.source})`,
-        "Antwort angezeigt",
-      ]);
-    }
+
+  setTraces([
+    "Nachricht empfangen",
+    "Sensible Anfrage erkannt",
+    `Antwort aus ${data.source}`,
+    "Antwort angezeigt",
+  ]);
+
+} else if (data.route === "guardrail") {
+
+  setTraces([
+    "Nachricht empfangen",
+    "Guardrail erkannt",
+    "Antwort durch Guardrail blockiert",
+    "Antwort angezeigt",
+  ]);
+
+} else {
+
+  setTraces([
+    "Nachricht empfangen",
+    `Anfrage gestartet (${routeName})`,
+    `Antwort erhalten (${data.source})`,
+    "Antwort angezeigt",
+  ]);
+}
 
     const assistantMessage: Message = {
       text: data.response,
@@ -252,7 +264,7 @@ function App() {
   <ChatWindow messages={messages} />
 
   {loading && <LoadingIndicator />}
-  
+
   <div ref={messagesEndRef} />
 
   {showToast && (
