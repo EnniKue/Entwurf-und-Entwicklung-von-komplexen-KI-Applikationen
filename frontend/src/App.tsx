@@ -1,4 +1,8 @@
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 
 import ChatInput from "./components/ChatInput";
 import ChatWindow from "./components/ChatWindow";
@@ -26,6 +30,15 @@ function App() {
   const [progress, setProgress] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
   const [showToast, setShowToast] = useState(false);
+
+  const messagesEndRef =
+   useRef<HTMLDivElement>(null);
+
+   useEffect(() => {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+      });
+    }, [messages]);
 
   /*
   useEffect(() => {
@@ -239,6 +252,8 @@ function App() {
   <ChatWindow messages={messages} />
 
   {loading && <LoadingIndicator />}
+  
+  <div ref={messagesEndRef} />
 
   {showToast && (
     <div
