@@ -7,10 +7,7 @@ import {
 import ChatInput from "./components/ChatInput";
 import ChatWindow from "./components/ChatWindow";
 
-import {
-  sendMessage,
-  connectToTraceStream,
-} from "./services/api";
+import {sendMessage,} from "./services/api";
 
 import TracePanel from "./components/TracePanel";
 import LoadingIndicator from "./components/LoadingIndicator";
@@ -39,23 +36,6 @@ function App() {
         behavior: "smooth",
       });
     }, [messages]);
-
-  /*
-  useEffect(() => {
-  const eventSource =
-    connectToTraceStream((event) => {
-
-      setTraces((prev) => [
-        ...prev,
-        event,
-      ]);
-    });
-
-  return () => {
-    eventSource.close();
-  };
-}, []);
-*/
 
   const [menuPosition, setMenuPosition] = useState({
     x: 0,
@@ -142,27 +122,84 @@ function App() {
    
         setProgress(100);
 
-   } catch (error) {
-     setLoading(false);
+  } catch (error: any) {
 
+      console.log(error);
+
+      setLoading(false);
+
+      let errorMessage =
+        "Es ist ein Fehler aufgetreten.";
+
+      let traceMessage =
+        "Fehler aufgetreten";
+
+      // Backend nicht erreichbar
+      if (error.message === "HTTP_502") {
+
+        errorMessage =
+          "Backend derzeit nicht erreichbar. Bitte später erneut versuchen.";
+
+        traceMessage =
+          "Backend nicht erreichbar";
+
+      }
+
+      // Timeout
+      else if (error.message === "TIMEOUT") {
+
+        errorMessage =
+          "Anfrage dauert zu lange. Bitte erneut versuchen.";
+
+        traceMessage =
+          "Timeout";
+      }
+
+      // LLM nicht verfügbar
+      else if (error.message === "LLM_UNAVAILABLE") {
+
+        errorMessage =
+          "Sprachmodell aktuell nicht verfügbar.";
+
+        traceMessage =
+          "LLM nicht verfügbar";
+      }
+
+       // Ungültige Antwort 1
+      else if (error.message === "EMPTY_RESPONSE") {
+
+        errorMessage =
+          "Antwort konnte nicht verarbeitet werden.";
+
+        traceMessage =
+          "Ungültige Antwort";
+      } 
+
+      // Ungültige Antwort 2
+      else if (error.message === "INVALID_RESPONSE") {
+
+        errorMessage =
+          "Antwort konnte nicht verarbeitet werden.";
+
+        traceMessage =
+          "Ungültige Antwort";
+      }
       setTraces([
         "Nachricht empfangen",
         "Anfrage gestartet",
-        "Antwort konnte nicht geladen werden",
+        traceMessage,
       ]);
 
-     setMessages((prev) => [
+      setMessages((prev) => [
         ...prev,
         {
-         text: "Es ist ein Fehler bei der Anfrage aufgetreten.",
+          text: errorMessage,
           sender: "assistant",
         },
-    ]);
-
+      ]);
 
       setProgress(0);
-} 
-
+    }
   };
 
   const handleContextMenu = (

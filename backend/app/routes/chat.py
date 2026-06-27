@@ -53,3 +53,16 @@ async def chat_stream():
         event_generator(),
         media_type="text/event-stream"
     )
+
+@router.get(
+    "/status",
+    summary="Backend-Status",
+    description="Prüft, ob das Backend erreichbar ist."
+)
+def status():
+
+    return {
+        "status": "ok",
+        "service": "Coding Assistant",
+        "version": "1.0"
+    }

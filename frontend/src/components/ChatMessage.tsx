@@ -14,6 +14,15 @@ export default function ChatMessage({
   const isSensitive =
     route === "sensitive";
 
+  const isError =
+  route === "guardrail" ||
+  route === "sensitive" ||
+  text.includes("Backend derzeit nicht erreichbar") ||
+  text.includes("Sprachmodell aktuell nicht verfügbar") ||
+  text.includes("Anfrage dauert zu lange") ||
+  text.includes("Antwort konnte nicht verarbeitet werden") ||
+  text.includes("Fehler");
+
   return (
     <div
       style={{
@@ -34,10 +43,16 @@ export default function ChatMessage({
             : "#e5e7eb",
           color: isUser
             ? "white"
-            : "black",
+            : isError
+              ? "#b91c1c"
+              : "black",
         }}
       >
-        <strong>
+        <strong
+          style={{
+            color: "black",
+          }}
+        >
           {isUser ? "Du:" : "Assistent:"}
         </strong>
 
@@ -45,12 +60,9 @@ export default function ChatMessage({
           style={{
             marginTop: "5px",
 
-            color:
-              route === "sensitive"
-                ? "#dc2626"
-                : route === "guardrail"
-                ? "#dc2626"
-                : "inherit",
+            color: isError
+              ? "#dc2626"
+              : "inherit"
           }}
         >
           {text}

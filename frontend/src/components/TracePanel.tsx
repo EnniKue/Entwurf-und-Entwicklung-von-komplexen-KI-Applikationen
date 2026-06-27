@@ -24,7 +24,11 @@ export default function TracePanel({
         const isError =
             trace.includes("Fehler") ||
             trace.includes("nicht geladen") ||
-            trace.includes("fehlgeschlagen");
+            trace.includes("fehlgeschlagen") ||
+            trace.includes("nicht erreichbar") ||
+            trace.includes("Timeout") ||
+            trace.includes("Ungültige Antwort") ||
+            trace.includes("LLM nicht verfügbar");
 
         const isSensitive =
             trace.includes("Sensible Anfrage") ||
