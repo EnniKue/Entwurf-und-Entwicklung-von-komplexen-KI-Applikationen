@@ -62,29 +62,36 @@ export const sendMessage = async (message: string) => {
 
 export const connectToTraceStream = (
   onEvent: (event: string) => void
-) => {
+): Promise<EventSource> => {
 
-  const eventSource = new EventSource(
-    "/api/chat/stream"
-  );
+  return new Promise((resolve) => {
 
-  eventSource.onopen = () => {
-    console.log("SSE verbunden");
-  };
+    const eventSource = new EventSource("/api/chat/stream");
 
-  eventSource.onmessage = (event) => {
+    eventSource.onopen = () => {
 
-    console.log("SSE:", event.data);
+      console.log("✅ SSE verbunden");
 
-    const data = JSON.parse(event.data);
+      resolve(eventSource);
 
-    onEvent(data.event);
+    };
 
-  };
+    eventSource.onmessage = (event) => {
 
-  eventSource.onerror = (error) => {
-    console.log("SSE Fehler", error);
-  };
+      console.log("📨 Event:", event.data);
 
-  return eventSource;
+      const data = JSON.parse(event.data);
+
+      onEvent(data.event);
+
+    };
+
+    eventSource.onerror = (error) => {
+
+      console.log("❌ SSE Fehler", error);
+
+    };
+
+  });
+
 };

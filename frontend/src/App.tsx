@@ -33,12 +33,37 @@ function App() {
 
   const messagesEndRef =
    useRef<HTMLDivElement>(null);
+  const eventSourceRef = 
+    useRef<EventSource | null>(null);
 
    useEffect(() => {
       messagesEndRef.current?.scrollIntoView({
         behavior: "smooth",
       });
     }, [messages]);
+
+   useEffect(() => {
+
+      connectToTraceStream((event) => {
+
+        setTraces((prev) => [
+          ...prev,
+          event,
+        ]);
+
+      }).then((source) => {
+
+        eventSourceRef.current = source;
+
+      });
+
+      return () => {
+
+        eventSourceRef.current?.close();
+
+      };
+
+    }, []);
 
   const [menuPosition, setMenuPosition] = useState({
     x: 0,
@@ -47,16 +72,6 @@ function App() {
   
   const handleSend = async (message: string) => {
     if (!message.trim()) return;
-
-    const eventSource =
-      connectToTraceStream((event) => {
-
-        setTraces((prev) => [
-          ...prev,
-          event,
-        ]);
-
-      });
 
     setTraces([]);
     setProgress(0);
@@ -95,14 +110,8 @@ function App() {
     };
 
     setMessages((prev) => [...prev, assistantMessage]);
-   
-        setProgress(100);
 
-        setTimeout(() => {
-          eventSource.close();
-        }, 1000);
-
-        eventSource.close();
+    setProgress(100);
 
   } catch (error: any) {
 
@@ -175,8 +184,6 @@ function App() {
       ]);
 
       setProgress(0);
-
-      eventSource.close();
     }
   };
 
@@ -225,6 +232,7 @@ function App() {
       setTimeout(() => {
         setShowToast(false);
       }, 2000);
+
     }
 
     closeMenu();

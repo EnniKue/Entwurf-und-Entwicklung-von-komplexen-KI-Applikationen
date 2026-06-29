@@ -9,7 +9,10 @@ from app.models.chat import (
 )
 
 from app.services.chat_service import ask_llm
-from app.services.event_stream import get_event
+from app.services.event_stream import (
+    register_client,
+    unregister_client,
+)
 
 router = APIRouter()
 
@@ -33,19 +36,32 @@ async def chat(request: ChatRequest):
 @router.get("/chat/stream")
 async def chat_stream():
 
+    queue = await register_client()
+    print("SSE Verbindung geöffnet")
+
     async def event_generator():
 
-        while True:
+        try:
 
-            event = await get_event()
+            while True:
 
-            yield (
-                f"data: {json.dumps({'event': event})}\n\n"
-            )
+                print("Warte auf Event...")
+
+                event = await queue.get()
+
+                print("Event erhalten:", event)
+
+                yield (
+                    f"data: {json.dumps({'event': event})}\n\n"
+                )
+
+        finally:
+
+            unregister_client(queue)
 
     return StreamingResponse(
         event_generator(),
-        media_type="text/event-stream"
+        media_type="text/event-stream",
     )
 
 @router.get(

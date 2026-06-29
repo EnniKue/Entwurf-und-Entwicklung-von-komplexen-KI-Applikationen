@@ -1,11 +1,30 @@
 import asyncio
 
-event_queue = asyncio.Queue()
+clients = []
+
+async def register_client():
+
+    queue = asyncio.Queue()
+
+    clients.append(queue)
+
+    print("Client verbunden:", len(clients))
+
+    return queue
+
+
+def unregister_client(queue):
+
+    if queue in clients:
+        clients.remove(queue)
+
+    print("Client getrennt:", len(clients))
 
 
 async def send_event(event: str):
-    await event_queue.put(event)
 
+    print("Sende Event:", event)
+    print("Clients:", len(clients))
 
-async def get_event():
-    return await event_queue.get()
+    for queue in clients:
+        await queue.put(event)
