@@ -7,7 +7,10 @@ import {
 import ChatInput from "./components/ChatInput";
 import ChatWindow from "./components/ChatWindow";
 
-import {sendMessage,} from "./services/api";
+import {
+  sendMessage,
+  connectToTraceStream,
+} from "./services/api";
 
 import TracePanel from "./components/TracePanel";
 import LoadingIndicator from "./components/LoadingIndicator";
@@ -45,6 +48,16 @@ function App() {
   const handleSend = async (message: string) => {
     if (!message.trim()) return;
 
+    const eventSource =
+      connectToTraceStream((event) => {
+
+        setTraces((prev) => [
+          ...prev,
+          event,
+        ]);
+
+      });
+
     setTraces([]);
     setProgress(0);
 
@@ -55,19 +68,10 @@ function App() {
 
     setMessages((prev) => [...prev, userMessage]);
     setProgress(25);
-    setTraces((prev) => [
-      ...prev,
-      "Nachricht empfangen",
-    ]);
-
+    
     setLoading(true);
 
     setProgress(50);
-
-    setTraces((prev) => [
-      ...prev,
-      "Anfrage gestartet",
-    ]);
 
   try {
     const data = await sendMessage(message);
@@ -84,34 +88,6 @@ function App() {
 
     setLoading(false);  
 
-    if (data.route === "sensitive") {
-
-  setTraces([
-    "Nachricht empfangen",
-    "Sensible Anfrage erkannt",
-    `Antwort aus ${data.source}`,
-    "Antwort angezeigt",
-  ]);
-
-} else if (data.route === "guardrail") {
-
-  setTraces([
-    "Nachricht empfangen",
-    "Guardrail erkannt",
-    "Antwort durch Guardrail blockiert",
-    "Antwort angezeigt",
-  ]);
-
-} else {
-
-  setTraces([
-    "Nachricht empfangen",
-    `Anfrage gestartet (${routeName})`,
-    `Antwort erhalten (${data.source})`,
-    "Antwort angezeigt",
-  ]);
-}
-
     const assistantMessage: Message = {
       text: data.response,
       sender: "assistant",
@@ -121,6 +97,12 @@ function App() {
     setMessages((prev) => [...prev, assistantMessage]);
    
         setProgress(100);
+
+        setTimeout(() => {
+          eventSource.close();
+        }, 1000);
+
+        eventSource.close();
 
   } catch (error: any) {
 
@@ -184,12 +166,6 @@ function App() {
         traceMessage =
           "Ungültige Antwort";
       }
-      setTraces([
-        "Nachricht empfangen",
-        "Anfrage gestartet",
-        traceMessage,
-      ]);
-
       setMessages((prev) => [
         ...prev,
         {
@@ -199,6 +175,8 @@ function App() {
       ]);
 
       setProgress(0);
+
+      eventSource.close();
     }
   };
 

@@ -1,6 +1,7 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 from app.services.logger import log_request
+from app.services.event_stream import send_event
 
 import os
 import json
@@ -131,8 +132,12 @@ def get_hello_message():
     return {"message": "Hello World!"}
 
 
-def ask_llm(user_message: str):
+async def ask_llm(user_message: str):
     start_time = time.time()
+
+    await send_event(
+        "Nachricht empfangen"
+    )
 
     if detect_prompt_injection(
         user_message
@@ -151,6 +156,15 @@ def ask_llm(user_message: str):
             guardrail_triggered="prompt_injection"
         )
 
+        await send_event(
+            "Prompt Injection erkannt"
+        )
+
+        await send_event(
+            "Antwort gesendet"
+        )
+
+        
         return {
             "response":
                 "Diese Anfrage kann nicht verarbeitet werden.",
@@ -160,6 +174,10 @@ def ask_llm(user_message: str):
                 "guardrail"
         }
 
+    await send_event(
+        "Wissensbasis durchsuchen"
+    )
+    
     knowledge_result = search_knowledge(
         user_message
     )
@@ -183,6 +201,14 @@ def ask_llm(user_message: str):
                 guardrail_triggered="sensitive_topic"
             )
             
+            await send_event(
+                "Sensible Anfrage erkannt"
+            )
+
+            await send_event(
+                "Antwort zurück"
+            )
+
             return {
                 "response": knowledge_result["answer"],
                 "source": knowledge_result["source"],
@@ -201,6 +227,14 @@ def ask_llm(user_message: str):
             latency_ms=latency_ms
         )
         
+        await send_event(
+            "Wissensbasis gefunden"
+        )
+
+        await send_event(
+            "Antwort zurück"
+        )
+        
         return {
             "response": knowledge_result["answer"],
             "source": knowledge_result["source"],
@@ -215,6 +249,10 @@ def ask_llm(user_message: str):
 
     try:
 
+        await send_event(
+            "LLM gestartet"
+        )
+        
         response = call_llm_with_retry(
             system_prompt, 
             user_message
@@ -260,6 +298,15 @@ def ask_llm(user_message: str):
             guardrail_triggered="invalid_output"
         )
 
+        await send_event(
+            "Ungültige Antwort erkannt"
+        )
+
+        await send_event(
+            "Antwort gesendet"
+        )
+
+        
         return {
             "response":
                 "Die Antwort konnte nicht validiert werden.",
@@ -279,6 +326,14 @@ def ask_llm(user_message: str):
         category="unknown",
         source="LLM",
         latency_ms=latency_ms
+    )
+
+    await send_event(
+        "Antwort erzeugt"
+    )
+
+    await send_event(
+        "Antwort zurück"
     )
 
     return {

@@ -2,7 +2,6 @@ from fastapi import APIRouter
 
 from fastapi.responses import StreamingResponse
 import json
-import asyncio
 
 from app.models.chat import (
     ChatRequest,
@@ -10,6 +9,7 @@ from app.models.chat import (
 )
 
 from app.services.chat_service import ask_llm
+from app.services.event_stream import get_event
 
 router = APIRouter()
 
@@ -20,9 +20,9 @@ router = APIRouter()
     summary="Chat mit dem LLM",
     description="Sendet eine Nutzernachricht an das Sprachmodell."
 )
-def chat(request: ChatRequest):
+async def chat(request: ChatRequest):
 
-    result = ask_llm(request.message)
+    result = await ask_llm(request.message)
 
     return ChatResponse(
         response=result["response"],
@@ -35,19 +35,13 @@ async def chat_stream():
 
     async def event_generator():
 
-        yield f"data: {json.dumps({'event': 'Nachricht empfangen'})}\n\n"
+        while True:
 
-        await asyncio.sleep(1)
+            event = await get_event()
 
-        yield f"data: {json.dumps({'event': 'Anfrage gestartet'})}\n\n"
-
-        await asyncio.sleep(1)
-
-        yield f"data: {json.dumps({'event': 'Antwort erhalten'})}\n\n"
-
-        await asyncio.sleep(1)
-
-        yield f"data: {json.dumps({'event': 'Antwort angezeigt'})}\n\n"
+            yield (
+                f"data: {json.dumps({'event': event})}\n\n"
+            )
 
     return StreamingResponse(
         event_generator(),
