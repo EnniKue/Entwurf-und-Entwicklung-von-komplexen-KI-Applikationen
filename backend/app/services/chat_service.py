@@ -1,37 +1,55 @@
-from openai import OpenAI
 from dotenv import load_dotenv
 from app.services.logger import log_request
-from app.services.event_stream import send_event
+from app.services.event_stream import (
+    send_event,
+    send_finished,
+)
 
 import os
 import json
 import time
 import random
+import httpx
 
 load_dotenv()
 
 BASE_URL = os.getenv("BASE_URL")
-API_KEY = os.getenv("API_KEY")
 MODEL_NAME = os.getenv("MODEL_NAME")
+OLLAMA_URL = BASE_URL.rstrip("/")
 
-client = OpenAI(
-    api_key=API_KEY,
-    base_url=BASE_URL
-)
+if OLLAMA_URL.endswith("/v1"):
+    OLLAMA_URL = OLLAMA_URL[:-3]
+
+
+# ----------------------------------------------------
+# Wissensbasis laden
+# ----------------------------------------------------
 
 def load_knowledge():
 
     with open(
         "knowledge.json",
         "r",
-        encoding="utf-8"
+        encoding="utf-8",
     ) as file:
+
         return json.load(file)
 
-def call_llm_with_retry(
+
+# ----------------------------------------------------
+# Ollama Streaming
+# ----------------------------------------------------
+
+async def call_llm_with_retry(
     system_prompt: str,
-    user_message: str
+    user_message: str,
 ):
+
+    prompt = (
+        system_prompt
+        + "\n\n"
+        + user_message
+    )
 
     max_attempts = 3
 
@@ -39,19 +57,30 @@ def call_llm_with_retry(
 
         try:
 
-            return client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": system_prompt
+            async with httpx.AsyncClient(
+                timeout=None,
+            ) as client:
+
+                async with client.stream(
+                    "POST",
+                    f"{OLLAMA_URL}/api/generate",
+                    json={
+                        "model": MODEL_NAME,
+                        "prompt": prompt,
+                        "stream": True,
                     },
-                    {
-                        "role": "user",
-                        "content": user_message
-                    }
-                ]
-            )
+                ) as response:
+
+                    response.raise_for_status()
+
+                    async for line in response.aiter_lines():
+
+                        if not line:
+                            continue
+
+                        yield json.loads(line)
+
+            return
 
         except Exception:
 
@@ -67,13 +96,19 @@ def call_llm_with_retry(
                 category="llm_retry",
                 source="LLM",
                 latency_ms=0,
-                guardrail_triggered=
-                    f"retry_attempt_{attempt + 1}"
+                guardrail_triggered=f"retry_{attempt+1}",
             )
 
             time.sleep(wait_time)
-    
-def search_knowledge(user_message: str):
+
+
+# ----------------------------------------------------
+# Wissensbasis durchsuchen
+# ----------------------------------------------------
+
+def search_knowledge(
+    user_message: str,
+):
 
     knowledge = load_knowledge()
 
@@ -89,33 +124,44 @@ def search_knowledge(user_message: str):
 
     return None
 
+
+# ----------------------------------------------------
+# Prompt Injection
+# ----------------------------------------------------
+
 def detect_prompt_injection(
-    user_message: str
+    user_message: str,
 ):
 
     suspicious_keywords = [
+
         "ignore previous instructions",
         "system prompt",
-        "zeige deinen prompt",
-        "ignoriere alle regeln",
         "developer message",
         "act as",
         "administrator",
         "root access",
-        "wissensbasis ausgeben"
+
+        "zeige deinen prompt",
+        "ignoriere alle regeln",
+        "wissensbasis ausgeben",
+
     ]
 
     user_message = user_message.lower()
 
-    for keyword in suspicious_keywords:
+    return any(
+        keyword in user_message
+        for keyword in suspicious_keywords
+    )
 
-        if keyword in user_message:
-            return True
 
-    return False
+# ----------------------------------------------------
+# Output prüfen
+# ----------------------------------------------------
 
 def validate_output(
-    response_text: str
+    response_text: str,
 ):
 
     if response_text is None:
@@ -128,16 +174,26 @@ def validate_output(
 
     return True
 
+
 def get_hello_message():
-    return {"message": "Hello World!"}
 
+    return {
+        "message": "Hello World!"
+    }
 
-async def ask_llm(user_message: str):
+async def ask_llm(
+    user_message: str,
+):
+
     start_time = time.time()
 
     await send_event(
         "Nachricht empfangen"
     )
+
+    # ---------------------------------
+    # Prompt Injection
+    # ---------------------------------
 
     if detect_prompt_injection(
         user_message
@@ -153,133 +209,133 @@ async def ask_llm(user_message: str):
             category="security",
             source="Prompt Injection Filter",
             latency_ms=latency_ms,
-            guardrail_triggered="prompt_injection"
+            guardrail_triggered="prompt_injection",
         )
 
         await send_event(
             "Prompt Injection erkannt"
         )
 
-        await send_event(
-            "Antwort gesendet"
+        await send_finished(
+            response="Diese Anfrage kann nicht verarbeitet werden.",
+            route="guardrail",
+            source="Guardrail",
         )
 
-        
-        return {
-            "response":
-                "Diese Anfrage kann nicht verarbeitet werden.",
-            "source":
-                "Guardrail",
-            "route":
-                "guardrail"
-        }
+        await send_event(
+            "Antwort zurück"
+        )
+
+        return
+
+    # ---------------------------------
+    # Wissensbasis
+    # ---------------------------------
 
     await send_event(
         "Wissensbasis durchsuchen"
     )
-    
+
     knowledge_result = search_knowledge(
         user_message
     )
 
     if knowledge_result:
 
+        latency_ms = int(
+            (time.time() - start_time)
+            * 1000
+        )
+
         if (
             knowledge_result["category"]
             == "sensibel"
         ):
-            latency_ms = int(
-                (time.time() - start_time)
-                * 1000
-            )
 
             log_request(
                 route="sensitive",
                 category="sensibel",
                 source=knowledge_result["source"],
                 latency_ms=latency_ms,
-                guardrail_triggered="sensitive_topic"
+                guardrail_triggered="sensitive_topic",
             )
-            
+
             await send_event(
                 "Sensible Anfrage erkannt"
+            )
+
+            await send_finished(
+                response=knowledge_result["answer"],
+                route="sensitive",
+                source=knowledge_result["source"],
             )
 
             await send_event(
                 "Antwort zurück"
             )
 
-            return {
-                "response": knowledge_result["answer"],
-                "source": knowledge_result["source"],
-                "route": "sensitive"
-            }
-
-        latency_ms = int(
-            (time.time() - start_time)
-            * 1000
-        )
+            return
 
         log_request(
             route="knowledge_base",
             category=knowledge_result["category"],
             source=knowledge_result["source"],
-            latency_ms=latency_ms
+            latency_ms=latency_ms,
         )
-        
+
         await send_event(
             "Wissensbasis gefunden"
+        )
+
+        await send_finished(
+            response=knowledge_result["answer"],
+            route="knowledge_base",
+            source=knowledge_result["source"],
         )
 
         await send_event(
             "Antwort zurück"
         )
-        
-        return {
-            "response": knowledge_result["answer"],
-            "source": knowledge_result["source"],
-            "route": "knowledge_base"
-        }
+
+        return
+
+    # ---------------------------------
+    # LLM
+    # ---------------------------------
 
     system_prompt = open(
         "system_prompt.txt",
         "r",
-        encoding="utf-8"
+        encoding="utf-8",
     ).read()
 
-    try:
-
-        await send_event(
-            "LLM gestartet"
-        )
-        
-        response = call_llm_with_retry(
-            system_prompt, 
-            user_message
-        )
-
-    except Exception as e:
-
-        latency_ms = int(
-            (time.time() - start_time)
-            * 1000
-        )
-
-        log_request(
-            route="llm",
-            category="unknown",
-            source="LLM",
-            latency_ms=latency_ms,
-            status="error",
-            error=str(e)
-        )
-
-        raise
-
-    answer = (
-        response.choices[0]
-        .message.content
+    await send_event(
+        "LLM gestartet"
     )
+
+    answer = ""
+
+    async for chunk in call_llm_with_retry(
+        system_prompt,
+        user_message,
+    ):
+
+        token = chunk.get(
+            "response",
+            "",
+        )
+
+        if token:
+
+            answer += token
+
+            await send_event(
+                "token",
+                token,
+            )
+
+        if chunk.get("done"):
+            break
 
     if not validate_output(
         answer
@@ -295,49 +351,48 @@ async def ask_llm(user_message: str):
             category="output_validation",
             source="Output Guardrail",
             latency_ms=latency_ms,
-            guardrail_triggered="invalid_output"
+            guardrail_triggered="invalid_output",
         )
 
         await send_event(
             "Ungültige Antwort erkannt"
         )
 
-        await send_event(
-            "Antwort gesendet"
+        await send_finished(
+            response="Die Antwort konnte nicht validiert werden.",
+            route="guardrail",
+            source="Output Guardrail",
         )
 
-        
-        return {
-            "response":
-                "Die Antwort konnte nicht validiert werden.",
-            "source":
-                "Output Guardrail",
-            "route":
-                "guardrail"
-        }
+        await send_event(
+            "Antwort zurück"
+        )
+
+        return
 
     latency_ms = int(
         (time.time() - start_time)
-         * 1000
+        * 1000
     )
 
     log_request(
         route="llm",
-        category="unknown",
+        category="llm",
         source="LLM",
-        latency_ms=latency_ms
+        latency_ms=latency_ms,
     )
 
     await send_event(
         "Antwort erzeugt"
     )
 
+    await send_finished(
+        response=answer,
+        route="llm",
+        source="LLM",
+    )
+
     await send_event(
         "Antwort zurück"
     )
 
-    return {
-        "response": answer,
-        "source": "LLM",
-        "route": "llm"
-    }

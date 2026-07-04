@@ -4,6 +4,7 @@ type Message = {
   text: string;
   sender: "user" | "assistant";
   route?: string;
+  streaming?: boolean;
 };
 
 type Props = {

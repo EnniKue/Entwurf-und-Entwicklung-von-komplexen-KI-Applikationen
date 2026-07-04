@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from fastapi.responses import StreamingResponse
+
+import asyncio
 import json
 
 from app.models.chat import (
@@ -16,52 +18,60 @@ from app.services.event_stream import (
 
 router = APIRouter()
 
-
-@router.post(
-    "/chat",
-    response_model=ChatResponse,
-    summary="Chat mit dem LLM",
-    description="Sendet eine Nutzernachricht an das Sprachmodell."
-)
+@router.post("/chat")
 async def chat(request: ChatRequest):
 
-    result = await ask_llm(request.message)
-
-    return ChatResponse(
-        response=result["response"],
-        source=result["source"],
-        route=result["route"]
+    asyncio.create_task(
+        ask_llm(request.message)
     )
+    
+    return {
+        "status": "started"
+    }
 
 @router.get("/chat/stream")
-async def chat_stream():
+async def chat_stream(request: Request):
 
     queue = await register_client()
-    print("SSE Verbindung geöffnet")
-
+    
     async def event_generator():
 
-        try:
+            try:
 
-            while True:
+                while True:
 
-                print("Warte auf Event...")
+                    if await request.is_disconnected():
+                        print("Client hat Verbindung getrennt")
+                        break
 
-                event = await queue.get()
+                    try:
 
-                print("Event erhalten:", event)
+                        payload = await asyncio.wait_for(
+                            queue.get(),
+                            timeout=0.5
+                        )
 
-                yield (
-                    f"data: {json.dumps({'event': event})}\n\n"
-                )
+                    except asyncio.TimeoutError:
+                        continue
+                    
+                    print(">>> YIELD")
+                    
+                    yield (
+                        f"data: {json.dumps(payload)}\n\n"
+                    )
+                    
+            finally:
 
-        finally:
-
-            unregister_client(queue)
+                unregister_client(queue)
 
     return StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
     )
 
 @router.get(

@@ -21,21 +21,23 @@ export default function TracePanel({
 
       {traces.map((trace, index) => {
 
+        const text = trace ?? "";
+
         const isError =
-            trace.includes("Fehler") ||
-            trace.includes("nicht geladen") ||
-            trace.includes("fehlgeschlagen") ||
-            trace.includes("nicht erreichbar") ||
-            trace.includes("Timeout") ||
-            trace.includes("Ungültige Antwort") ||
-            trace.includes("LLM nicht verfügbar");
+            text.includes("Fehler") ||
+            text.includes("nicht geladen") ||
+            text.includes("fehlgeschlagen") ||
+            text.includes("nicht erreichbar") ||
+            text.includes("Timeout") ||
+            text.includes("Ungültige Antwort") ||
+            text.includes("LLM nicht verfügbar");
 
         const isSensitive =
-            trace.includes("Sensible Anfrage") ||
-            trace.includes("Antwort aus");
+            text.includes("Sensible Anfrage") ||
+            text.includes("Antwort aus");
 
         const isGuardrail =
-            trace.includes("Guardrail");
+            text.includes("Guardrail");
 
         let icon = "✓";
         let color = "#16a34a";
@@ -78,7 +80,7 @@ export default function TracePanel({
                 {icon}
                 </span>
 
-            {trace}
+            {text}
             </div>
         );
         })}

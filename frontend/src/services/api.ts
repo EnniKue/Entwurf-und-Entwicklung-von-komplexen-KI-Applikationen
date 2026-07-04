@@ -1,42 +1,26 @@
-export const sendMessage = async (message: string) => {
+export type TraceEvent = {
+  event: string;
+  data: any;
+};
 
-  const controller = new AbortController();
+export const sendMessage = async (
+  message: string
+) => {
 
-  const timeout = setTimeout(() => {
-    controller.abort();
-  }, 30000);
-
-  let response;
-
-  try {
-
-    response = await fetch("/api/chat", {
+  const response = await fetch(
+    "/api/chat",
+    {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type":
+          "application/json",
       },
       body: JSON.stringify({
         message,
       }),
-      signal: controller.signal,
-    });
-
-  } catch (error: any) {
-
-    clearTimeout(timeout);
-
-    if (error.name === "AbortError") {
-      throw new Error("TIMEOUT");
     }
+  );
 
-    throw error;
-  }
-
-  clearTimeout(timeout);
-
-  console.log("Status:", response.status);
-
-  // Backend oder Proxyfehler
   if (!response.ok) {
 
     throw new Error(
@@ -45,23 +29,10 @@ export const sendMessage = async (message: string) => {
 
   }
 
-  const text = await response.text();
-
-  console.log("RAW RESPONSE:");
-  console.log(text);
-
-  if (!text) {
-
-    throw new Error("EMPTY_RESPONSE");
-
-  }
-
-  return JSON.parse(text);
-
 };
 
 export const connectToTraceStream = (
-  onEvent: (event: string) => void
+  onEvent: (payload: TraceEvent) => void
 ): Promise<EventSource> => {
 
   return new Promise((resolve) => {
@@ -69,26 +40,25 @@ export const connectToTraceStream = (
     const eventSource = new EventSource("/api/chat/stream");
 
     eventSource.onopen = () => {
-
-      console.log("✅ SSE verbunden");
-
+     
       resolve(eventSource);
 
     };
 
     eventSource.onmessage = (event) => {
 
-      console.log("📨 Event:", event.data);
-
-      const data = JSON.parse(event.data);
-
-      onEvent(data.event);
+      const payload: TraceEvent =
+        JSON.parse(event.data);
+    
+      onEvent(payload);
 
     };
 
     eventSource.onerror = (error) => {
 
-      console.log("❌ SSE Fehler", error);
+      console.error("SSE Fehler", error);
+
+      eventSource.close();
 
     };
 

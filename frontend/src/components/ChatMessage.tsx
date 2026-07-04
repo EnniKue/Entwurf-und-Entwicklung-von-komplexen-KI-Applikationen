@@ -9,6 +9,9 @@ export default function ChatMessage({
   sender,
   route,
 }: Props) {
+
+  console.log("ChatMessage render:", text);
+
   const isUser = sender === "user";
 
   const isSensitive =

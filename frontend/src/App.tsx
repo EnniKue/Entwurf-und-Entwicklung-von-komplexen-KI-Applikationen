@@ -12,6 +12,8 @@ import {
   connectToTraceStream,
 } from "./services/api";
 
+import type { TraceEvent } from "./services/api";
+
 import TracePanel from "./components/TracePanel";
 import LoadingIndicator from "./components/LoadingIndicator";
 import ProgressBar from "./components/ProgressBar";
@@ -21,6 +23,7 @@ type Message = {
   text: string;
   sender: "user" | "assistant";
   route?: string;
+  streaming?: boolean;
 };
 
 function App() {
@@ -43,27 +46,109 @@ function App() {
     }, [messages]);
 
    useEffect(() => {
+    connectToTraceStream((payload: TraceEvent) => {
+      if (payload.event === "token") {
+ 
+        setMessages((prev) => {
 
-      connectToTraceStream((event) => {
+          if (prev.length === 0) {
+            return prev;
+          }
 
-        setTraces((prev) => [
-          ...prev,
-          event,
-        ]);
+          const copy = [...prev];
 
-      }).then((source) => {
+          const last = copy[copy.length - 1];
 
-        eventSourceRef.current = source;
+          if (
+            last &&
+            last.sender === "assistant" &&
+            last.streaming
+          ) {
 
-      });
+            copy[copy.length - 1] = {
+              ...last,
+              text: last.text + (payload.data ?? ""),
+            };
 
-      return () => {
+          }
 
-        eventSourceRef.current?.close();
+          return copy;
 
-      };
+        });
 
-    }, []);
+        return;
+      }
+
+     if (payload.event) {
+      setTraces((prev) => [
+        ...prev,
+        payload.event,
+      ]);
+    }
+
+      switch (payload.event) {
+        case "Nachricht empfangen":
+          setProgress(10);
+          break;
+
+        case "Wissensbasis durchsuchen":
+          setProgress(30);
+          break;
+
+        case "Wissensbasis gefunden":
+          setProgress(60);
+          break;
+
+        case "LLM gestartet":
+          setProgress(60);
+          break;
+
+        case "Antwort erzeugt":
+          setProgress(90);
+          break;
+
+        case "finished":
+
+          setMessages((prev) => {
+
+            if (prev.length === 0) {
+              return prev;
+            }
+
+            const copy = [...prev];
+
+            const last = copy[copy.length - 1];
+
+            copy[copy.length - 1] = {
+              ...last,
+              streaming: false,
+              route: payload.data.route,
+            };
+
+            return copy;
+          });
+
+          setLoading(false);
+
+          break;
+
+        case "Antwort zurück":
+          
+          setProgress(100);
+
+          break;
+                  
+                default:
+                  break;
+              }
+            }).then((source) => {
+              eventSourceRef.current = source;
+            });
+
+            return () => {
+              eventSourceRef.current?.close();
+            };
+          }, []);
 
   const [menuPosition, setMenuPosition] = useState({
     x: 0,
@@ -81,100 +166,58 @@ function App() {
       sender: "user",
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    setProgress(25);
-    
+    setMessages((prev) => [
+      ...prev,
+      userMessage,
+      {
+        text: "",
+        sender: "assistant",
+        streaming: true,
+      },
+    ]);
+
     setLoading(true);
 
-    setProgress(50);
-
-  try {
-    const data = await sendMessage(message);
-
-    const routeNames: Record<string, string> = {
-      knowledge_base: "Wissensbasis",
-      llm: "KI-Modell",
-    };
-
-    const routeName =
-      routeNames[data.route] ?? data.route;
-
-    setProgress(75);
-
-    setLoading(false);  
-
-    const assistantMessage: Message = {
-      text: data.response,
-      sender: "assistant",
-      route: data.route,
-    };
-
-    setMessages((prev) => [...prev, assistantMessage]);
-
-    setProgress(100);
-
-  } catch (error: any) {
-
+    try {
+      await sendMessage(message);
+      setLoading(false);
+    } catch (error: any) {
       console.log(error);
 
       setLoading(false);
 
-      let errorMessage =
-        "Es ist ein Fehler aufgetreten.";
-
-      let traceMessage =
-        "Fehler aufgetreten";
+      let errorMessage = "Es ist ein Fehler aufgetreten.";
 
       // Backend nicht erreichbar
       if (error.message === "HTTP_502") {
-
         errorMessage =
           "Backend derzeit nicht erreichbar. Bitte später erneut versuchen.";
-
-        traceMessage =
-          "Backend nicht erreichbar";
-
       }
 
       // Timeout
       else if (error.message === "TIMEOUT") {
-
         errorMessage =
           "Anfrage dauert zu lange. Bitte erneut versuchen.";
-
-        traceMessage =
-          "Timeout";
       }
 
       // LLM nicht verfügbar
       else if (error.message === "LLM_UNAVAILABLE") {
-
         errorMessage =
           "Sprachmodell aktuell nicht verfügbar.";
-
-        traceMessage =
-          "LLM nicht verfügbar";
       }
 
-       // Ungültige Antwort 1
+      // Ungültige Antwort 1
       else if (error.message === "EMPTY_RESPONSE") {
-
         errorMessage =
           "Antwort konnte nicht verarbeitet werden.";
-
-        traceMessage =
-          "Ungültige Antwort";
-      } 
+      }
 
       // Ungültige Antwort 2
       else if (error.message === "INVALID_RESPONSE") {
-
         errorMessage =
           "Antwort konnte nicht verarbeitet werden.";
-
-        traceMessage =
-          "Ungültige Antwort";
       }
+
       setMessages((prev) => [
         ...prev,
         {

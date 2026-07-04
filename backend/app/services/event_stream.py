@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 clients = []
 
@@ -21,10 +22,31 @@ def unregister_client(queue):
     print("Client getrennt:", len(clients))
 
 
-async def send_event(event: str):
+async def send_event(
+    event: str,
+    data=None,
+):
 
-    print("Sende Event:", event)
-    print("Clients:", len(clients))
-
+    payload = {
+        "event": event,
+        "data": data,
+    }
+    
     for queue in clients:
-        await queue.put(event)
+        await queue.put(payload)
+
+
+async def send_finished(
+    response: str,
+    route: str,
+    source: str,
+):
+
+    await send_event(
+        "finished",
+        {
+            "response": response,
+            "route": route,
+            "source": source,
+        },
+    )
