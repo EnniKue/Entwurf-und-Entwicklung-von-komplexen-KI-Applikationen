@@ -27,7 +27,13 @@ type Message = {
 };
 
 function App() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      sender: "assistant",
+      text:
+        "Willkommen bei NovaTech Solutions!\n\nIch bin Nova, dein digitaler Onboarding-Assistent. Ich unterstütze dich beim Einstieg ins Unternehmen und helfe dir bei Fragen zu Urlaub, Arbeitszeit, IT-Zugängen, Unternehmensrichtlinien und organisatorischen Abläufen.\n\nStelle einfach deine erste Frage.",
+    },
+  ]);
   const [traces, setTraces] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -310,7 +316,7 @@ function App() {
       color: "#1f2937",
     }}
   >
-    Onboarding-Assistent
+    Nova - Onboarding-Assistent
   </h1>
 
   <div
@@ -371,7 +377,7 @@ function App() {
 
    <div
       style={{
-        width: "280px",
+        width: "250px",
         flexShrink: 0,
         border: "none",
         boxShadow: "0 4px 12px rgba(0,0,0,0.08)",

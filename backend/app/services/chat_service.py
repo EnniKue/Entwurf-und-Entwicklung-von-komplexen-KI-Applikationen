@@ -63,15 +63,21 @@ async def call_llm_with_retry(
             f"{message['content']}\n\n"
         )
 
-    prompt += "### Aktuelle Benutzerfrage ###\n\n"
+    prompt += (
+            "\n### Aktuelle Benutzerfrage ###\n\n"
+        )
 
     prompt += (
-        f"User:\n{user_message}\n\n"
-    )
+            f"Benutzer: {user_message}\n\n"
+        )
 
     prompt += (
-        "Assistant:\n"
-    )
+            "Beantworte ausschließlich die letzte Benutzerfrage.\n"
+            "Setze die Unterhaltung fort.\n"
+            "Beginne NICHT mit einer Begrüßung.\n"
+            "Beginne NICHT mit einer Vorstellung.\n\n"
+            "Antwort:\n"
+        )
 
     max_attempts = 3
 
@@ -175,6 +181,15 @@ def search_knowledge(
             best_score = score
             best_entry = entry
 
+    # Sensible Themen bereits bei einem eindeutigen Treffer erkennen
+    if (
+        best_entry
+        and best_entry["category"] == "sensibel"
+        and best_score >= 1
+    ):
+        return best_entry
+
+     # Alle anderen Antworten benötigen mindestens zwei Punkte
     if best_score >= 2:
         return best_entry
 

@@ -1,5 +1,19 @@
 [
   {
+  "keywords": [
+    "hallo",
+    "hi",
+    "hey",
+    "guten morgen",
+    "guten tag",
+    "servus"
+  ],
+  "answer": "Hallo! Schön, dass du da bist. Wie kann ich dich heute unterstützen?",
+  "source": "Begrüßung",
+  "category": "begruessung"
+},  
+  
+  {
     "keywords": [
       "urlaubstage",
       "urlaubsanspruch",
@@ -8,7 +22,7 @@
       "urlaub pro jahr"
     ],
     "answer": "Vollzeitbeschäftigte haben 30 Urlaubstage pro Kalenderjahr.",
-    "source": "Unternehmensrichtlinie",
+    "source": "NovaTech HR",
     "category": "urlaub"
   },
   {
@@ -20,7 +34,7 @@
       "urlaub anmelden"
     ],
     "answer": "Urlaub muss vorab mit der Führungskraft abgestimmt und anschließend über das Zeiterfassungs- bzw. HR-System beantragt werden.",
-    "source": "Unternehmensrichtlinie",
+    "source": "NovaTech HR",
     "category": "urlaub"
   },
   {
@@ -53,7 +67,7 @@
       "von zuhause arbeiten"
     ],
     "answer": "Homeoffice kann nach Absprache mit der Führungskraft genutzt werden.",
-    "source": "Unternehmensrichtlinie",
+    "source": "NovaTech HR",
     "category": "arbeitsmodell"
   },
   {
@@ -64,7 +78,7 @@
       "seminar"
     ],
     "answer": "Fortbildungen können über die Personalabteilung beziehungsweise die zuständige Führungskraft beantragt werden.",
-    "source": "Unternehmensrichtlinie",
+    "source": "NovaTech HR",
     "category": "entwicklung"
   },
   {
@@ -74,7 +88,7 @@
       "elternzeit informationen"
     ],
     "answer": "Informationen zur Elternzeit erhältst du über die Personalabteilung.",
-    "source": "Unternehmensrichtlinie",
+    "source": "NovaTech HR",
     "category": "personal"
   },
   {
@@ -85,7 +99,7 @@
       "spesen abrechnen"
     ],
     "answer": "Reisekosten können über das Spesenformular beziehungsweise das Reisekostenportal eingereicht werden.",
-    "source": "Unternehmensrichtlinie",
+    "source": "NovaTech Finance",
     "category": "abrechnung"
   },
   {
@@ -97,7 +111,7 @@
       "anmeldung"
     ],
     "answer": "Passwortänderungen oder das Zurücksetzen eines Passworts können über das IT-Service-Portal durchgeführt werden.",
-    "source": "IT-Richtlinie",
+    "source": "NovaTech IT-Richtlinie",
     "category": "it"
   },
   {
@@ -108,7 +122,7 @@
       "lohn"
     ],
     "answer": "Gehalts- und Vergütungsfragen werden ausschließlich durch die Personalabteilung beantwortet.",
-    "source": "HR",
+    "source": "NovaTech HR",
     "category": "sensibel"
   },
   {
@@ -118,7 +132,7 @@
       "arbeitsrecht"
     ],
     "answer": "Bitte wende dich bei arbeitsrechtlichen Fragen direkt an die Personalabteilung.",
-    "source": "HR",
+    "source": "NovaTech HR",
     "category": "sensibel"
   },
   {
@@ -129,7 +143,7 @@
       "weltanschauung"
     ],
     "answer": "Fragen zu religiösen oder weltanschaulichen Themen werden nicht verarbeitet. Bitte wende dich an die zuständige Ansprechperson.",
-    "source": "Compliance",
+    "source": "NovaTech Compliance",
     "category": "sensibel"
   },
   {
@@ -140,7 +154,7 @@
       "krankheitsdiagnose"
     ],
     "answer": "Gesundheitsbezogene Informationen und Diagnosen werden aus Datenschutzgründen nicht verarbeitet.",
-    "source": "Datenschutz",
+    "source": "NovaTech Datenschutz",
     "category": "sensibel"
   }
 ]

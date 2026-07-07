@@ -37,7 +37,7 @@ export default function ChatMessage({
       
       <div
         style={{
-          maxWidth: "60%",
+          maxWidth: "68%",
           display: "flex",
           flexDirection: "column",
           alignItems: isUser
@@ -54,7 +54,7 @@ export default function ChatMessage({
           fontWeight: 600,
         }}
       >
-        {isUser ? "Du" : "Assistent"}
+        {isUser ? "Du" : "Nova"}
       </div>        
 
       <div
