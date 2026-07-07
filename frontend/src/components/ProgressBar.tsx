@@ -14,9 +14,10 @@ export default function ProgressBar({
       <div
         style={{
           width: "100%",
-          height: "12px",
-          backgroundColor: "#e5e7eb",
+          height: "10px",
+          backgroundColor: "#eef2ff",
           borderRadius: "999px",
+          boxShadow: "inset 0 1px 3px rgba(0,0,0,0.08)",
           overflow: "hidden",
         }}
       >
@@ -24,7 +25,9 @@ export default function ProgressBar({
           style={{
             width: `${progress}%`,
             height: "100%",
-            backgroundColor: "#4f46e5",
+            backgroundColor: "#60a5fa",
+            borderRadius: "999px",
+            boxShadow: "0 0 6px rgba(96,165,250,0.35)",
             transition: "width 0.3s ease",
           }}
         />

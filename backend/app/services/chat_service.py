@@ -20,6 +20,12 @@ OLLAMA_URL = BASE_URL.rstrip("/")
 if OLLAMA_URL.endswith("/v1"):
     OLLAMA_URL = OLLAMA_URL[:-3]
 
+# ----------------------------------------------------
+# Conversation Memory
+# ----------------------------------------------------
+
+conversation_history = []
+
 
 # ----------------------------------------------------
 # Wissensbasis laden
@@ -42,13 +48,29 @@ def load_knowledge():
 
 async def call_llm_with_retry(
     system_prompt: str,
+    conversation_history: list,
     user_message: str,
 ):
 
-    prompt = (
-        system_prompt
-        + "\n\n"
-        + user_message
+    prompt = system_prompt
+
+    prompt += "\n\n### Bisherige Unterhaltung ###\n\n"
+
+    for message in conversation_history:
+
+        prompt += (
+            f"{message['role'].capitalize()}:\n"
+            f"{message['content']}\n\n"
+        )
+
+    prompt += "### Aktuelle Benutzerfrage ###\n\n"
+
+    prompt += (
+        f"User:\n{user_message}\n\n"
+    )
+
+    prompt += (
+        "Assistant:\n"
     )
 
     max_attempts = 3
@@ -109,21 +131,54 @@ async def call_llm_with_retry(
 def search_knowledge(
     user_message: str,
 ):
-
     knowledge = load_knowledge()
 
     user_message = user_message.lower()
 
+    best_entry = None
+    best_score = 0
+
     for entry in knowledge:
+
+        score = 0
 
         for keyword in entry["keywords"]:
 
-            if keyword.lower() in user_message:
+            keyword = keyword.lower()
 
-                return entry
+            # Mehrwort-Keyword
+            if " " in keyword:
+
+                words = keyword.split()
+
+                matched_words = 0
+
+                for word in words:
+
+                    if word in user_message:
+                        matched_words += 1
+
+                # Für jedes gefundene Wort einen Punkt
+                score += matched_words
+
+                # Bonus, wenn alle Wörter gefunden wurden
+                if matched_words == len(words):
+                    score += 2
+
+            # Einzelwort
+            else:
+
+                if keyword in user_message:
+                    score += 1
+
+        if score > best_score:
+            best_score = score
+            best_entry = entry
+
+    if best_score >= 2:
+        return best_entry
 
     return None
-
 
 # ----------------------------------------------------
 # Prompt Injection
@@ -190,6 +245,17 @@ async def ask_llm(
     await send_event(
         "Nachricht empfangen"
     )
+
+    conversation_history.append(
+        {
+            "role": "user",
+            "content": user_message,
+        }
+    )
+
+    # Nur die letzten 20 Nachrichten behalten
+    if len(conversation_history) > 20:
+        conversation_history[:] = conversation_history[-20:]
 
     # ---------------------------------
     # Prompt Injection
@@ -317,6 +383,7 @@ async def ask_llm(
 
     async for chunk in call_llm_with_retry(
         system_prompt,
+        conversation_history,
         user_message,
     ):
 
@@ -391,6 +458,16 @@ async def ask_llm(
         route="llm",
         source="LLM",
     )
+
+    conversation_history.append(
+        {
+            "role": "assistant",
+            "content": answer,
+        }
+    )
+
+    if len(conversation_history) > 20:
+        conversation_history[:] = conversation_history[-20:]
 
     await send_event(
         "Antwort zurück"

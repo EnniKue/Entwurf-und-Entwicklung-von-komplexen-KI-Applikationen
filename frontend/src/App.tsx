@@ -121,8 +121,9 @@ function App() {
 
             copy[copy.length - 1] = {
               ...last,
-              streaming: false,
+              text: payload.data.response,
               route: payload.data.route,
+              streaming: false,
             };
 
             return copy;
@@ -180,7 +181,7 @@ function App() {
 
     try {
       await sendMessage(message);
-      setLoading(false);
+      
     } catch (error: any) {
       console.log(error);
 
@@ -304,24 +305,29 @@ function App() {
   <h1
     style={{
       marginBottom: "20px",
+      fontSize: "22px",
+      fontWeight: 600,
+      color: "#1f2937",
     }}
   >
-    Coding Assistant
+    Onboarding-Assistent
   </h1>
 
   <div
     style={{
       display: "flex",
       gap: "20px",
-      height: "500px",
+      height: "600px",
     }}
   >
     <div
       onContextMenu={handleContextMenu}
       style={{
-        flex: 2,
-        border: "1px solid gray",
-        padding: "10px",
+        flex: 3,
+        backgroundColor: "#ffffff",
+        borderRadius: "16px",
+        padding: "18px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
         overflowY: "auto",
         position: "relative",
       }}
@@ -365,8 +371,10 @@ function App() {
 
    <div
       style={{
-        flex: 1,
-        border: "1px solid #ddd",
+        width: "280px",
+        flexShrink: 0,
+        border: "none",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
         borderRadius: "12px",
         padding: "15px",
         overflowY: "auto",
@@ -390,7 +398,17 @@ function App() {
   )}
   
    
-  <ChatInput onSend={handleSend} />
+  <div
+    style={{
+      marginTop: "18px",
+      padding: "0 30px 24px 30px",
+    }}
+  >
+    <ChatInput
+      onSend={handleSend}
+      loading={loading}
+    />
+  </div>
 </>
   );
 }

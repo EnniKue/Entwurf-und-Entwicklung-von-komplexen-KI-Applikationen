@@ -53,9 +53,7 @@ async def chat_stream(request: Request):
 
                     except asyncio.TimeoutError:
                         continue
-                    
-                    print(">>> YIELD")
-                    
+                                                        
                     yield (
                         f"data: {json.dumps(payload)}\n\n"
                     )

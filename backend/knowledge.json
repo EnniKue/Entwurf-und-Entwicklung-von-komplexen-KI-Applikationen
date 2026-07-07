@@ -1,74 +1,146 @@
 [
   {
-    "keywords": ["urlaub", "urlaubstage"],
-    "answer": "Vollzeitbeschäftigte haben 30 Urlaubstage pro Jahr.",
+    "keywords": [
+      "urlaubstage",
+      "urlaubsanspruch",
+      "wie viele urlaubstage",
+      "anzahl urlaubstage",
+      "urlaub pro jahr"
+    ],
+    "answer": "Vollzeitbeschäftigte haben 30 Urlaubstage pro Kalenderjahr.",
     "source": "Unternehmensrichtlinie",
     "category": "urlaub"
   },
   {
-    "keywords": ["krankmeldung", "krank"],
-    "answer": "Eine Krankmeldung muss unverzüglich eingereicht werden.",
+    "keywords": [
+      "urlaub beantragen",
+      "beantrage urlaub",
+      "urlaubsantrag",
+      "urlaub einreichen",
+      "urlaub anmelden"
+    ],
+    "answer": "Urlaub muss vorab mit der Führungskraft abgestimmt und anschließend über das Zeiterfassungs- bzw. HR-System beantragt werden.",
+    "source": "Unternehmensrichtlinie",
+    "category": "urlaub"
+  },
+  {
+    "keywords": [
+      "krankmeldung",
+      "krank melden",
+      "melde mich krank",
+      "arbeitsunfähig",
+      "au bescheinigung",
+      "arbeitsunfähigkeitsbescheinigung"
+    ],
+    "answer": "Eine Krankmeldung muss unverzüglich erfolgen. Reiche deine Arbeitsunfähigkeitsbescheinigung entsprechend der Unternehmensrichtlinie ein.",
     "source": "Unternehmensrichtlinie",
     "category": "krankheit"
   },
   {
-    "keywords": ["arbeitszeit"],
+    "keywords": [
+      "arbeitszeit",
+      "wochenarbeitszeit",
+      "stunden pro woche"
+    ],
     "answer": "Die regelmäßige Arbeitszeit beträgt 40 Stunden pro Woche.",
     "source": "Unternehmensrichtlinie",
     "category": "arbeitszeit"
   },
   {
-    "keywords": ["homeoffice"],
+    "keywords": [
+      "homeoffice",
+      "mobiles arbeiten",
+      "von zuhause arbeiten"
+    ],
     "answer": "Homeoffice kann nach Absprache mit der Führungskraft genutzt werden.",
     "source": "Unternehmensrichtlinie",
     "category": "arbeitsmodell"
   },
   {
-    "keywords": ["fortbildung", "weiterbildung"],
-    "answer": "Fortbildungen können über die Personalabteilung beantragt werden.",
+    "keywords": [
+      "fortbildung",
+      "weiterbildung",
+      "schulung",
+      "seminar"
+    ],
+    "answer": "Fortbildungen können über die Personalabteilung beziehungsweise die zuständige Führungskraft beantragt werden.",
     "source": "Unternehmensrichtlinie",
     "category": "entwicklung"
   },
   {
-    "keywords": ["elternzeit"],
-    "answer": "Informationen zur Elternzeit erhalten Sie über die Personalabteilung.",
+    "keywords": [
+      "elternzeit",
+      "elternzeit beantragen",
+      "elternzeit informationen"
+    ],
+    "answer": "Informationen zur Elternzeit erhältst du über die Personalabteilung.",
     "source": "Unternehmensrichtlinie",
     "category": "personal"
   },
   {
-    "keywords": ["spesen", "reisekosten"],
-    "answer": "Reisekosten können über das Spesenformular eingereicht werden.",
+    "keywords": [
+      "spesen",
+      "reisekosten",
+      "reisekostenabrechnung",
+      "spesen abrechnen"
+    ],
+    "answer": "Reisekosten können über das Spesenformular beziehungsweise das Reisekostenportal eingereicht werden.",
     "source": "Unternehmensrichtlinie",
     "category": "abrechnung"
   },
   {
-    "keywords": ["passwort", "zugang"],
-    "answer": "Passwortänderungen können über das IT-Service-Portal vorgenommen werden.",
+    "keywords": [
+      "passwort",
+      "passwort ändern",
+      "passwort zurücksetzen",
+      "login",
+      "anmeldung"
+    ],
+    "answer": "Passwortänderungen oder das Zurücksetzen eines Passworts können über das IT-Service-Portal durchgeführt werden.",
     "source": "IT-Richtlinie",
     "category": "it"
   },
   {
-  "keywords": ["gehalt", "bonus", "vergütung"],
-  "answer": "Gehalts- und Vergütungsfragen werden ausschließlich durch die Personalabteilung beantwortet.",
-  "source": "HR",
-  "category": "sensibel"
-},
-{
-  "keywords": ["kündigung", "abmahnung"],
-  "answer": "Bitte wenden Sie sich für arbeitsrechtliche Fragen direkt an die Personalabteilung.",
-  "source": "HR",
-  "category": "sensibel"
-},
-{
-  "keywords": ["religion", "glaube", "konfession"],
-  "answer": "Fragen zu religiösen oder weltanschaulichen Themen werden nicht verarbeitet. Bitte wenden Sie sich an die zuständige Ansprechperson.",
-  "source": "Compliance",
-  "category": "sensibel"
-},
-{
-  "keywords": ["diagnose", "krankheit", "gesundheitsdaten"],
-  "answer": "Gesundheitsbezogene Informationen und Diagnosen werden aus Datenschutzgründen nicht verarbeitet.",
-  "source": "Datenschutz",
-  "category": "sensibel"
-}
+    "keywords": [
+      "gehalt",
+      "vergütung",
+      "bonus",
+      "lohn"
+    ],
+    "answer": "Gehalts- und Vergütungsfragen werden ausschließlich durch die Personalabteilung beantwortet.",
+    "source": "HR",
+    "category": "sensibel"
+  },
+  {
+    "keywords": [
+      "kündigung",
+      "abmahnung",
+      "arbeitsrecht"
+    ],
+    "answer": "Bitte wende dich bei arbeitsrechtlichen Fragen direkt an die Personalabteilung.",
+    "source": "HR",
+    "category": "sensibel"
+  },
+  {
+    "keywords": [
+      "religion",
+      "glaube",
+      "konfession",
+      "weltanschauung"
+    ],
+    "answer": "Fragen zu religiösen oder weltanschaulichen Themen werden nicht verarbeitet. Bitte wende dich an die zuständige Ansprechperson.",
+    "source": "Compliance",
+    "category": "sensibel"
+  },
+  {
+    "keywords": [
+      "diagnose",
+      "gesundheitsdaten",
+      "medizinische daten",
+      "krankheitsdiagnose"
+    ],
+    "answer": "Gesundheitsbezogene Informationen und Diagnosen werden aus Datenschutzgründen nicht verarbeitet.",
+    "source": "Datenschutz",
+    "category": "sensibel"
+  }
 ]
