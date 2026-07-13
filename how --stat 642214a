@@ -1,0 +1,10 @@
+[33m642214a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Add architecture diagram and update README
+[33m5084446[m README für Projekt ergänzt
+[33m414ba5d[m Frontend-Polish, optimierte Wissensbasis, Conversation Memory und automatische Begrüßung
+[33mc1737c4[m Conversation Memory, Prompt Optimierung, Wissensbasis verbessert und Frontend-Polish
+[33mad0837a[m Implementiertes LLM-Streaming mit Server-Sent Events
+[33mf0fb12d[m Refactor SSE architecture and stabilize event streaming
+[33m663e055[m Start SSE progress propagation with event stream infrastructure
+[33m549b57c[m Add frontend error handling, timeout support, status endpoint and UI improvements
+[33ma488e3c[m feat(guardrails): add retry logging and response routing
+[33md410e78[m feat(ui): add automatic chat scrolling

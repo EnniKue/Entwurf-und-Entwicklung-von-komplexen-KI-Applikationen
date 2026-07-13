@@ -1,15 +1,14 @@
 from dotenv import load_dotenv
 from app.services.logger import log_request
+from app.services.llm import call_llm_with_retry
 from app.services.event_stream import (
     send_event,
     send_finished,
 )
 
 import os
-import json
 import time
-import random
-import httpx
+import json
 
 load_dotenv()
 
@@ -46,88 +45,7 @@ def load_knowledge():
 # Ollama Streaming
 # ----------------------------------------------------
 
-async def call_llm_with_retry(
-    system_prompt: str,
-    conversation_history: list,
-    user_message: str,
-):
 
-    prompt = system_prompt
-
-    prompt += "\n\n### Bisherige Unterhaltung ###\n\n"
-
-    for message in conversation_history:
-
-        prompt += (
-            f"{message['role'].capitalize()}:\n"
-            f"{message['content']}\n\n"
-        )
-
-    prompt += (
-            "\n### Aktuelle Benutzerfrage ###\n\n"
-        )
-
-    prompt += (
-            f"Benutzer: {user_message}\n\n"
-        )
-
-    prompt += (
-            "Beantworte ausschließlich die letzte Benutzerfrage.\n"
-            "Setze die Unterhaltung fort.\n"
-            "Beginne NICHT mit einer Begrüßung.\n"
-            "Beginne NICHT mit einer Vorstellung.\n\n"
-            "Antwort:\n"
-        )
-
-    max_attempts = 3
-
-    for attempt in range(max_attempts):
-
-        try:
-
-            async with httpx.AsyncClient(
-                timeout=None,
-            ) as client:
-
-                async with client.stream(
-                    "POST",
-                    f"{OLLAMA_URL}/api/generate",
-                    json={
-                        "model": MODEL_NAME,
-                        "prompt": prompt,
-                        "stream": True,
-                    },
-                ) as response:
-
-                    response.raise_for_status()
-
-                    async for line in response.aiter_lines():
-
-                        if not line:
-                            continue
-
-                        yield json.loads(line)
-
-            return
-
-        except Exception:
-
-            if attempt == max_attempts - 1:
-                raise
-
-            wait_time = (
-                2 ** attempt
-            ) + random.random()
-
-            log_request(
-                route="retry",
-                category="llm_retry",
-                source="LLM",
-                latency_ms=0,
-                guardrail_triggered=f"retry_{attempt+1}",
-            )
-
-            time.sleep(wait_time)
 
 
 # ----------------------------------------------------
