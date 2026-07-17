@@ -1,50 +1,82 @@
-# NovaTech Onboarding-Assistent
+# NovaTech-Onboarding-Assistent
 
 ## Projektübersicht
 
-Der NovaTech Onboarding-Assistent ist ein KI-gestützter Chatbot, der neue Mitarbeitende beim Einstieg in das Unternehmen unterstützt. Er beantwortet Fragen zu Unternehmensrichtlinien, Arbeitsabläufen, IT-Themen und organisatorischen Prozessen.
+Der **NovaTech-Onboarding-Assistent** ist eine KI-gestützte Webanwendung, die neue Mitarbeitende während ihres Onboardings unterstützt. Der Chatbot beantwortet organisatorische Fragen, beispielsweise zu Unternehmensrichtlinien, IT-Themen und internen Abläufen.
 
-Zur Beantwortung von Anfragen kombiniert das System eine lokale Wissensbasis mit einem lokal ausgeführten Large Language Model (IBM Granite 4.1 über Ollama). Dadurch können sowohl unternehmensspezifische als auch allgemeine Fragestellungen beantwortet werden.
+Zur Beantwortung von Anfragen kombiniert die Anwendung eine kuratierte Wissensbasis mit einem lokal ausgeführten Large Language Model (LLM). Je nach Anfrage entscheidet das Backend automatisch, ob eine Antwort aus der Wissensbasis geliefert, eine Eskalation durchgeführt oder das Sprachmodell verwendet wird.
 
-Das Projekt entstand im Rahmen des Moduls „Entwurf und Entwicklung von komplexen KI-Applikationen“.
+Das Projekt entstand im Rahmen des Moduls **„Entwurf und Entwicklung von komplexen KI-Applikationen“**.
 
 ---
 
-## Funktionen
+# Funktionen
 
 - KI-gestützter Onboarding-Chatbot
-- Lokale Wissensbasis für Unternehmensrichtlinien
+- Lokale Wissensbasis für Unternehmensinformationen
 - Lokales Large Language Model (IBM Granite 4.1 über Ollama)
 - Conversation Memory
-- Erkennung sensibler Themen (Guardrails)
-- Streaming der Antworten
+- Guardrails zur Erkennung sensibler Themen
+- Streaming der Antwortgenerierung
 - Aktivitätsverlauf (Trace Panel)
-- Fortschrittsanzeige während der Antwortgenerierung
+- Fortschrittsanzeige während der Verarbeitung
 - Kontextmenü (Antwort kopieren, Chat löschen, Aktivitätsverlauf löschen)
-- Logging aller Chatanfragen
-- Fehlerbehandlung im Frontend
+- Logging aller Anfragen
+- Fehlerbehandlung
 
 ---
 
-## Verwendete Technologien
+# Verarbeitungswege
 
-### Frontend
+Der Assistent unterstützt drei unterschiedliche Verarbeitungswege.
+
+### Wissensbasis
+
+Bekannte Standardfragen werden direkt aus der Wissensbasis beantwortet.
+
+**Beispiel:**
+
+- Wie lautet das WLAN-Passwort?
+
+### Eskalation
+
+Sensible Themen werden nicht durch das Sprachmodell beantwortet. Stattdessen verweist die Anwendung auf die zuständige Ansprechperson.
+
+**Beispiele:**
+
+- Kündigung
+- Gehalt
+- Krankheit
+- Diskriminierung
+- arbeitsrechtliche Fragestellungen
+
+### LLM-Fallback
+
+Unbekannte und nicht sensible Fragen werden mithilfe des lokalen Sprachmodells beantwortet. Dabei wird die Wissensbasis als Kontext für die Antwortgenerierung genutzt.
+
+---
+
+# Verwendete Technologien
+
+## Frontend
 
 - React
 - TypeScript
 - Vite
+- CSS
+- Server-Sent Events (SSE)
 
-### Backend
+## Backend
 
 - Python
 - FastAPI
-- OpenAI Python SDK (für die Anbindung an Ollama)
+- OpenAI Python SDK (OpenAI-kompatible Schnittstelle)
 - Ollama
 - IBM Granite 4.1 (3B)
 
 ---
 
-## Projektstruktur
+# Projektstruktur
 
 ```text
 NovaTech-Onboarding-Assistent
@@ -53,69 +85,112 @@ NovaTech-Onboarding-Assistent
 │   ├── app
 │   │   ├── models
 │   │   ├── routes
-│   │   └── services
+│   │   ├── services
+│   │   └── main.py
 │   ├── logs
+│   ├── .env.example
 │   ├── knowledge.json
-│   ├── system_prompt.txt
 │   ├── requirements.txt
-│   └── .env
+│   ├── system_prompt.txt
+│   └── test_http.py
+│
+├── docs
+│   ├── diagrams
+│   └── images
 │
 ├── frontend
 │   ├── public
 │   ├── src
+│   │   ├── assets
 │   │   ├── components
 │   │   ├── services
 │   │   └── styles
-│   └── package.json
+│   ├── package.json
+│   └── package-lock.json
 │
-├── docs
-│   ├── diagrams
-│   │   └── systemarchitektur.drawio
-│   ├── images
-│   │   ├── systemarchitektur.png
-│   │   └── systemarchitektur.svg
-│   └── documentation
-│
+├── .gitignore
 └── README.md
 ```
 
 ---
 
-## Systemarchitektur
+# Systemarchitektur
 
 Die Anwendung besteht aus einem React-Frontend und einem FastAPI-Backend.
 
-Der Benutzer kommuniziert ausschließlich mit dem Frontend. Dieses sendet Anfragen an das Backend. Das Backend entscheidet anhand der Anfrage, ob eine Antwort aus der Wissensbasis geliefert oder das lokale Sprachmodell verwendet wird. Antworten werden per Server-Sent Events (SSE) an das Frontend übertragen und dort während der Generierung angezeigt.
+Der Benutzer kommuniziert ausschließlich mit dem Frontend. Dieses übermittelt die Anfrage an das Backend. Dort wird entschieden, ob die Antwort aus der Wissensbasis stammt, eine Eskalation erforderlich ist oder das lokale Sprachmodell verwendet wird.
 
-Die folgende Abbildung zeigt die Systemarchitektur des NovaTech-Onboarding-Assistenten sowie den Datenfluss einer Benutzeranfrage zwischen Frontend, Backend, den verwendeten Ressourcen und dem lokalen Large Language Model.
+Während der Verarbeitung überträgt das Backend Statusinformationen über **Server-Sent Events (SSE)** an das Frontend. Dadurch können der Aktivitätsverlauf und die Fortschrittsanzeige in Echtzeit dargestellt werden.
+
+Die folgende Abbildung zeigt die Systemarchitektur des NovaTech-Onboarding-Assistenten.
 
 ![Systemarchitektur](docs/images/systemarchitektur.png)
 
 ---
 
-## Projekt starten
+# Voraussetzungen
 
-### Voraussetzungen
+Für den Betrieb werden folgende Komponenten benötigt:
 
 - Python 3.11 oder neuer
 - Node.js 20 oder neuer
-- Ollama mit dem Modell IBM Granite 4.1 (3B)
+- npm
+- Ollama
+- Modell **IBM Granite 4.1 (3B)**
 
-### Backend
+---
+
+# Konfiguration
+
+Vor dem ersten Start muss die Datei
+
+```text
+backend/.env.example
+```
+
+nach
+
+```text
+backend/.env
+```
+
+kopiert werden.
+
+Anschließend sind die erforderlichen Konfigurationswerte (z. B. `BASE_URL`, `API_KEY` und `MODEL_NAME`) einzutragen.
+
+---
+
+# Projekt starten
+
+## Backend
 
 ```bash
 cd backend
 
 python -m venv .venv
+```
 
+Windows:
+
+```bash
 .venv\Scripts\activate
+```
 
+Abhängigkeiten installieren:
+
+```bash
 pip install -r requirements.txt
+```
 
+Backend starten:
+
+```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-### Frontend
+---
+
+## Frontend
 
 ```bash
 cd frontend
@@ -127,31 +202,57 @@ npm run dev
 
 ---
 
-## Projektstatus
+# Anwendung
 
-Das Projekt befindet sich auf einem funktionsfähigen Stand und umfasst alle wesentlichen Komponenten eines KI-gestützten Onboarding-Assistenten:
+Nach dem Start ist die Anwendung unter folgenden Adressen erreichbar:
 
-- Frontend mit React
-- FastAPI-Backend
-- Conversation Memory
-- Wissensbasis
-- LLM-Anbindung
-- Logging
-- Guardrails
-- Streaming
-- Aktivitätsverlauf
-- Fehlerbehandlung
+| Dienst | Adresse |
+|---------|----------|
+| Frontend | http://localhost:5173 |
+| Backend | http://127.0.0.1:8000 |
+| Swagger UI | http://127.0.0.1:8000/docs |
+| ReDoc | http://127.0.0.1:8000/redoc |
 
-Potenzielle Erweiterungen, beispielsweise eine Datenbankanbindung, ein Retrieval-Augmented Generation (RAG)-System oder eine Nachbearbeitung der LLM-Antworten im Backend, werden in der Projektdokumentation diskutiert.
 ---
 
-## Autor
+# Beispielanfragen
 
-Projekt im Studiengang Wirtschaftsinformatik
+| Anfrage | Verarbeitungsweg |
+|----------|------------------|
+| Wie viel Urlaub habe ich? | Wissensbasis |
+| Ich möchte kündigen. | Eskalation |
+| Erkläre mir den Unterschied zwischen Machine Learning und Deep Learning. | LLM-Fallback |
 
-Hochschule für Angewandte Wissenschaften Hamburg (HAW Hamburg)
+---
 
-Modul:
-Entwurf und Entwicklung von komplexen KI-Applikationen
+# Projektstatus
 
-Sommersemester 2026
+Der NovaTech-Onboarding-Assistent befindet sich auf einem funktionsfähigen Stand und umfasst die wesentlichen Komponenten eines KI-gestützten Onboarding-Systems.
+
+Umgesetzt wurden:
+
+- React-Frontend
+- FastAPI-Backend
+- Lokale Wissensbasis
+- LLM-Anbindung
+- Conversation Memory
+- Guardrails
+- Logging
+- Streaming
+- Aktivitätsverlauf
+- Fortschrittsanzeige
+- Fehlerbehandlung
+
+Mögliche Erweiterungen, beispielsweise eine Datenbankanbindung, ein Retrieval-Augmented Generation (RAG)-System oder eine weiterführende Optimierung der Antwortgenerierung, werden in der Projektdokumentation diskutiert.
+
+---
+
+# Autor
+
+**Studiengang:** Wirtschaftsinformatik
+
+**Hochschule:** Hochschule für angewandtes Management
+
+**Modul:** Entwurf und Entwicklung von komplexen KI-Applikationen
+
+**Semester:** Sommersemester 2026
