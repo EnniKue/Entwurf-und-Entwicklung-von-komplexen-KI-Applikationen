@@ -45,6 +45,9 @@ function App() {
   const eventSourceRef = 
     useRef<EventSource | null>(null);
 
+    const requestAbortedRef =
+      useRef(false);
+
    useEffect(() => {
       messagesEndRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -85,12 +88,19 @@ function App() {
         return;
       }
 
-     if (payload.event) {
-      setTraces((prev) => [
-        ...prev,
-        payload.event,
-      ]);
-    }
+     if (requestAbortedRef.current) {
+  return;
+}
+
+if (
+  payload.event &&
+  payload.event !== "finished"
+) {
+  setTraces((prev) => [
+    ...prev,
+    payload.event,
+  ]);
+}
 
       switch (payload.event) {
         case "Nachricht empfangen":
@@ -105,8 +115,8 @@ function App() {
           setProgress(60);
           break;
 
-        case "LLM gestartet":
-          setProgress(60);
+        case "Sprachmodell gestartet":
+          setProgress(75);
           break;
 
         case "Antwort erzeugt":
@@ -114,6 +124,10 @@ function App() {
           break;
 
         case "finished":
+
+          if (requestAbortedRef.current) {
+            break;
+          }
 
           setMessages((prev) => {
 
@@ -139,8 +153,12 @@ function App() {
 
           break;
 
-        case "Antwort zurück":
-          
+        case "Antwort übermittelt":
+
+          if (requestAbortedRef.current) {
+            break;
+          }
+
           setProgress(100);
 
           break;
@@ -183,6 +201,8 @@ function App() {
       },
     ]);
 
+    requestAbortedRef.current = false; 
+      
     setLoading(true);
 
     try {
@@ -190,19 +210,30 @@ function App() {
       
     } catch (error: any) {
       console.log(error);
-
+            
       setLoading(false);
 
       let errorMessage = "Es ist ein Fehler aufgetreten.";
 
       // Backend nicht erreichbar
-      if (error.message === "HTTP_502") {
+      if (
+        error.message === "BACKEND_UNREACHABLE" ||
+        error.message === "HTTP_502"
+      ) {
         errorMessage =
           "Backend derzeit nicht erreichbar. Bitte später erneut versuchen.";
       }
 
       // Timeout
       else if (error.message === "TIMEOUT") {
+
+        requestAbortedRef.current = true;
+
+        setTraces((prev) => [
+          ...prev,
+          "Timeout",
+        ]);
+
         errorMessage =
           "Anfrage dauert zu lange. Bitte erneut versuchen.";
       }
@@ -210,7 +241,7 @@ function App() {
       // LLM nicht verfügbar
       else if (error.message === "LLM_UNAVAILABLE") {
         errorMessage =
-          "Sprachmodell aktuell nicht verfügbar.";
+          "Das Sprachmodell ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.";
       }
 
       // Ungültige Antwort 1
@@ -225,13 +256,18 @@ function App() {
           "Antwort konnte nicht verarbeitet werden.";
       }
 
-      setMessages((prev) => [
-        ...prev,
-        {
+      setMessages((prev) => {
+        const copy = [...prev];
+
+        copy[copy.length - 1] = {
           text: errorMessage,
           sender: "assistant",
-        },
-      ]);
+          route: "llm_error",
+          streaming: false,
+        };
+
+        return copy;
+      });
 
       setProgress(0);
     }

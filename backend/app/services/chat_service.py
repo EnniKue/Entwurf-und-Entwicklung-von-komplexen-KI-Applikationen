@@ -1,3 +1,5 @@
+import asyncio
+
 from dotenv import load_dotenv
 from app.services.logger import log_request
 from app.services.llm import call_llm_with_retry
@@ -222,7 +224,7 @@ async def ask_llm(
         )
 
         await send_event(
-            "Antwort zurück"
+            "Antwort übermittelt"
         )
 
         return
@@ -270,7 +272,7 @@ async def ask_llm(
             )
 
             await send_event(
-                "Antwort zurück"
+                "Antwort übermittelt"
             )
 
             return
@@ -293,7 +295,7 @@ async def ask_llm(
         )
 
         await send_event(
-            "Antwort zurück"
+            "Antwort übermittelt"
         )
 
         return
@@ -309,33 +311,65 @@ async def ask_llm(
     ).read()
 
     await send_event(
-        "LLM gestartet"
+        "Sprachmodell gestartet"
     )
 
     answer = ""
 
-    async for chunk in call_llm_with_retry(
-        system_prompt,
-        conversation_history,
-        user_message,
-    ):
+    try:
 
-        token = chunk.get(
-            "response",
-            "",
-        )
+        async for chunk in call_llm_with_retry(
+            system_prompt,
+            conversation_history,
+            user_message,
+        ):
 
-        if token:
-
-            answer += token
-
-            await send_event(
-                "token",
-                token,
+            token = chunk.get(
+                "response",
+                "",
             )
 
-        if chunk.get("done"):
-            break
+            if token:
+
+                answer += token
+
+                await send_event(
+                    "token",
+                    token,
+                )
+
+            if chunk.get("done"):
+                break
+    except Exception as error:
+        
+        latency_ms = int(
+            (time.time() - start_time) * 1000
+        )
+
+        log_request(
+            route="llm",
+            category="llm_error",
+            source="LLM",
+            latency_ms=latency_ms,
+            status="error",
+            error=str(error),
+        )
+
+        await send_event(
+            "Sprachmodell nicht verfügbar"
+        )
+
+        await send_finished(
+            response="Das Sprachmodell ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.",
+            route="llm_error",
+            source="LLM",
+        )
+
+        await send_event(
+            "Antwort übermittelt"
+        )
+
+        return
 
     if not validate_output(
         answer
@@ -365,7 +399,7 @@ async def ask_llm(
         )
 
         await send_event(
-            "Antwort zurück"
+            "Antwort übermittelt"
         )
 
         return
@@ -403,6 +437,6 @@ async def ask_llm(
         conversation_history[:] = conversation_history[-20:]
 
     await send_event(
-        "Antwort zurück"
+        "Antwort übermittelt"
     )
 

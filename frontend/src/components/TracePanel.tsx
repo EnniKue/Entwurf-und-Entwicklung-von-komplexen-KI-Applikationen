@@ -30,7 +30,8 @@ export default function TracePanel({
             text.includes("nicht erreichbar") ||
             text.includes("Timeout") ||
             text.includes("Ungültige Antwort") ||
-            text.includes("LLM nicht verfügbar");
+            text.includes("LLM nicht verfügbar") ||
+            text.includes("Prompt Injection");
 
         const isSensitive =
             text.includes("Sensible Anfrage") ||

@@ -20,7 +20,7 @@ router = APIRouter()
 
 @router.post("/chat")
 async def chat(request: ChatRequest):
-
+        
     asyncio.create_task(
         ask_llm(request.message)
     )

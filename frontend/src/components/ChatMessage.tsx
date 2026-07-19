@@ -18,8 +18,8 @@ export default function ChatMessage({
   const isError =
   route === "guardrail" ||
   route === "sensitive" ||
+  route === "llm_error" ||
   text.includes("Backend derzeit nicht erreichbar") ||
-  text.includes("Sprachmodell aktuell nicht verfügbar") ||
   text.includes("Anfrage dauert zu lange") ||
   text.includes("Antwort konnte nicht verarbeitet werden") ||
   text.includes("Fehler");

@@ -7,25 +7,47 @@ export const sendMessage = async (
   message: string
 ) => {
 
-  const response = await fetch(
-    "/api/chat",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
-      body: JSON.stringify({
-        message,
-      }),
-    }
-  );
+const controller = new AbortController();
 
-  if (!response.ok) {
+const timeout = setTimeout(() => {
+  controller.abort();
+}, 30000);
 
-    throw new Error(
-      `HTTP_${response.status}`
+  try {
+
+    const response = await fetch(
+      "/api/chat",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message,
+        }),
+        signal: controller.signal,
+      }
     );
+
+    if (!response.ok) {
+
+      throw new Error(
+        `HTTP_${response.status}`
+      );
+
+    }
+
+    clearTimeout(timeout);
+
+  } catch (error: any) {
+
+    clearTimeout(timeout);
+
+    if (error.name === "AbortError") {
+      throw new Error("TIMEOUT");
+    }
+
+    throw new Error("BACKEND_UNREACHABLE");
 
   }
 
